@@ -35,7 +35,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.filled.Trash
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -63,7 +63,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -157,7 +156,7 @@ fun EditorScreen(viewModel: MainViewModel) {
                     }
                     IconButton(onClick = { viewModel.closeEditor() }) {
                         Icon(
-                            imageVector = Icons.Default.Trash,
+                            imageVector = Icons.Default.Delete,
                             contentDescription = "Delete",
                             tint = RedAccent
                         )
@@ -328,7 +327,7 @@ fun EditorScreen(viewModel: MainViewModel) {
                         }
                     )
                     ToolCircleButton(
-                        icon = Icons.Default.Trash,
+                        icon = Icons.Default.Delete,
                         label = "Clear",
                         onClick = { viewModel.clearTextLayers() }
                     )
@@ -435,7 +434,8 @@ fun EditorScreen(viewModel: MainViewModel) {
                             focusedBorderColor = TealAccent,
                             unfocusedBorderColor = DarkSurfaceVariant,
                             cursorColor = TealAccent,
-                            textColor = TextPrimary
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )

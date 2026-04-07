@@ -476,7 +476,8 @@ private fun ToolExecutionScreen(
                         focusedBorderColor = TealAccent,
                         unfocusedBorderColor = DarkSurfaceVariant,
                         cursorColor = TealAccent,
-                        textColor = TextPrimary
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )

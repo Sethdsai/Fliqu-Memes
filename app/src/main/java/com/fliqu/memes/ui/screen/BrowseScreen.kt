@@ -349,9 +349,7 @@ private fun GifCard(
                     )
                     DropdownMenu(
                         expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
-                        containerColor = DarkSurface,
-                        shape = RoundedCornerShape(12.dp)
+                        onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
                             text = { Text("Open in Editor", color = TextPrimary) },

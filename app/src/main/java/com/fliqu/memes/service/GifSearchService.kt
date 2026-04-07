@@ -2,6 +2,8 @@ package com.fliqu.memes.service
 
 import com.fliqu.memes.model.GifItem
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -114,10 +116,10 @@ object GifSearchService {
         }
     }
 
-    suspend fun searchAll(query: String, limit: Int = 20): List<GifItem> = withContext(Dispatchers.IO) {
+    suspend fun searchAll(query: String, limit: Int = 20): List<GifItem> = coroutineScope {
         val halfLimit = limit / 2
-        val tenorDeferred = kotlinx.coroutines.async { searchTenor(query, halfLimit) }
-        val giphyDeferred = kotlinx.coroutines.async { searchGiphy(query, limit - halfLimit) }
+        val tenorDeferred = async(Dispatchers.IO) { searchTenor(query, halfLimit) }
+        val giphyDeferred = async(Dispatchers.IO) { searchGiphy(query, limit - halfLimit) }
         val tenorResults = tenorDeferred.await()
         val giphyResults = giphyDeferred.await()
         tenorResults + giphyResults
