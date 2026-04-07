@@ -5,7 +5,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,14 +53,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -237,51 +236,58 @@ fun EditorScreen(viewModel: MainViewModel) {
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(8.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.TopStart
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(editorGifUrl ?: selectedMediaForEditor)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Editor Canvas",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Fit
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(editorGifUrl ?: selectedMediaForEditor)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Editor Canvas",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                }
 
                 textLayers.forEach { layer ->
-                    var totalDrag by remember(layer.id) { mutableFloatStateOf(0f) }
                     Text(
                         text = layer.text,
                         color = Color(layer.color),
                         fontSize = layer.fontSize.sp,
                         fontWeight = if (layer.isBold) FontWeight.Bold else FontWeight.Normal,
                         modifier = Modifier
-                            .offset(layer.x.dp, layer.y.dp)
+                            .padding(start = layer.x.dp, top = layer.y.dp)
                             .pointerInput(layer.id) {
-                                detectDragGestures(
-                                    onDragStart = { totalDrag = 0f },
-                                    onDrag = { change, dragAmount ->
+                                awaitEachGesture {
+                                    awaitFirstDown(requireUnconsumed = false)
+                                    var totalDrag = 0f
+                                    do {
+                                        val event = awaitPointerEvent()
+                                        val change = event.changes.firstOrNull() ?: break
+                                        if (!change.pressed) break
                                         change.consume()
-                                        totalDrag += dragAmount.getDistance()
+                                        val dx = change.position.x - change.previousPosition.x
+                                        val dy = change.position.y - change.previousPosition.y
+                                        totalDrag += kotlin.math.sqrt(dx * dx + dy * dy)
                                         viewModel.updateTextLayer(
                                             layer.copy(
-                                                x = layer.x + dragAmount.x,
-                                                y = layer.y + dragAmount.y
+                                                x = layer.x + dx,
+                                                y = layer.y + dy
                                             )
                                         )
-                                    },
-                                    onDragEnd = {
-                                        if (totalDrag < 10f) {
-                                            editingLayer = layer
-                                            showEditDialog = true
-                                        }
-                                    },
-                                    onDragCancel = { }
-                                )
+                                    } while (event.changes.any { it.pressed })
+                                    if (totalDrag < 10f) {
+                                        editingLayer = layer
+                                        showEditDialog = true
+                                    }
+                                }
                             }
                     )
                 }
